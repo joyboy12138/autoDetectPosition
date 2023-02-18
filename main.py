@@ -128,7 +128,7 @@ def sendImgEmail(imgDesk, imgFace):
     s.quit()
 
 
-# 调用摄像头拍照
+# 调用摄像头拍
 
 def getimgFace():
     '''
