@@ -13,6 +13,42 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+import datetime
+
+
+# 人脸检测
+def check_face():
+    flag = 0
+    img_name = ""
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    video_capture = cv2.VideoCapture(0)
+    while True:
+        ret, frame = video_capture.read()
+        if ret:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+            if len(faces) > 0:
+                flag = 0
+                # 获取当前时间
+                current_time = datetime.datetime.now().strftime('%Y年%m月%d日%H时%M分%S秒')
+                img_name = f'{current_time}.jpg'
+                # 保存当前帧的图像
+                cv2.imwrite(img_name, frame)
+            else:
+                flag += 1
+            # 如果等于3说明有三十分钟都检测不到人脸
+            if flag == 3:
+                desk = getImgDesk()  # 屏幕截图
+                sendImgEmail(desk, img_name)  # 打包发送
+                # break
+            if flag >= 5:
+                print("请尽快处理")
+
+        time.sleep(600)  # 等待10分钟再进行下一次检测
+
+    video_capture.release()
+    cv2.destroyAllWindows()
 
 
 # 获取鼠标坐标
