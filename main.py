@@ -1,4 +1,5 @@
 # This is a sample Python script.
+import os
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -19,9 +20,13 @@ import datetime
 # 人脸检测
 def check_face():
     flag = 0
-    img_name = ""
+    fileName = None
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     video_capture = cv2.VideoCapture(0)
+    save_dir = './photos'
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     while True:
         ret, frame = video_capture.read()
         if ret:
@@ -31,21 +36,26 @@ def check_face():
             if len(faces) > 0:
                 flag = 0
                 # 获取当前时间
-                current_time = datetime.datetime.now().strftime('%Y年%m月%d日%H时%M分%S秒')
-                img_name = f'{current_time}.jpg'
+                current_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+                fileName = f'{current_time}.jpg'  # 指定保存路径 fuck，不能用中文保存
+                print(fileName)
                 # 保存当前帧的图像
-                cv2.imwrite(img_name, frame)
+                cv2.imwrite(fileName, frame)
+                print("监测到人脸")
+
             else:
                 flag += 1
+                print("没有监测到人脸")
             # 如果等于3说明有三十分钟都检测不到人脸
             if flag == 3:
                 desk = getImgDesk()  # 屏幕截图
-                sendImgEmail(desk, img_name)  # 打包发送
+                sendImgEmail(desk, fileName)  # 打包发送
+                print("超过3次了啊！")
                 # break
             if flag >= 5:
                 print("请尽快处理")
 
-        time.sleep(600)  # 等待10分钟再进行下一次检测
+        time.sleep(3)  # 等待10分钟再进行下一次检测
 
     video_capture.release()
     cv2.destroyAllWindows()
@@ -85,8 +95,10 @@ def getCoordinate():
 def getImgDesk():
     # imgName = time.strftime("%Y-%m-%d-%H:%M:%S", time.localtime())+".png"
     img = {"name": None, "file": None}
-    imgName = str(time.strftime("%Y年%m月%d日%H时%M分%S秒", time.localtime())) + ".png"  # 注意不能用-或者：等符号
-    screenshot = gui.screenshot(str(imgName))
+    # imgName = str(time.strftime("%Y%m%d%H%M%秒", time.localtime())) + ".png"  # 注意不能用-或者：等符号
+    current_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    imgName = f'{current_time}.png'  # 指定保存路径 fuck，不能用中文保存
+    screenshot = gui.screenshot(imgName)
     img["name"] = imgName
     img["file"] = screenshot
     return img
@@ -152,8 +164,8 @@ def sendImgEmail(imgDesk, imgFace):
     fp2.close()  # 关闭文件
 
     # 定义图片 ID，在 HTML 文本中引用
-    fp1.add_header('Content-ID', 'imgDesk')
-    fp2.add_header('Content-ID', 'imgFace')
+    imgDesk.add_header('Content-ID', 'imgDesk')
+    imgFace.add_header('Content-ID', 'imgFace')
     msg.attach(imgDesk)
     msg.attach(imgFace)
 
@@ -188,8 +200,9 @@ def getimgFace():
 if __name__ == '__main__':
     # getCoordinate()
     # im2 = gui.screenshot('123.png')
-    # sendImgEmail()
+    # sendImgEmail(getImgDesk()["name"])
     # print(getImg()["name"])
     # getCoordinate()
-    getimgFace()
+    # getimgFace()
+    check_face()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
